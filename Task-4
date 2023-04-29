@@ -1,0 +1,61 @@
+import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+
+function App() {
+  const [records, setRecords] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/records")
+      .then((response) => response.json())
+      .then((data) => {
+        setRecords(data);
+      });
+  }, []);
+
+  const handleDelete = (id) => {
+    fetch(`/api/records/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setRecords(records.filter((record) => record.id !== id));
+    });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.target);
+
+    fetch("/api/records", {
+      method: "POST",
+      body: data,
+    })
+      .then((response) => response.json())
+      .then((record) => {
+        setRecords([...records, record]);
+      });
+  };
+
+  return (
+    <div>
+      <h1>Records</h1>
+
+      <form onSubmit={handleSubmit}>
+        <label>
+          Name:
+          <input type="text" name="name" />
+        </label>
+        <button type="submit">Add record</button>
+      </form>
+
+      <ul>
+        {records.map((record) => (
+          <li key={record.id}>
+            {record.name}
+            <button onClick={() => handleDelete(record.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
